@@ -1,93 +1,153 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Our Universe</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Letter For You</title>
     <style>
-        body { margin: 0; background: #050505; overflow: hidden; font-family: 'Arial'; }
-        #canvas { display: block; }
-        .ui {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: white; text-align: center;
-            pointer-events: none; text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        :root {
+            --paper: #f9f4e8;
+            --ink: #2c3e50;
+            --accent: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #dcd0c0; /* Desk color */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* The Paper */
+        #paper {
+            width: 80%;
+            max-width: 600px;
+            height: 70vh;
+            background: var(--paper);
+            padding: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 0 100px rgba(0,0,0,0.05);
+            position: relative;
+            border-radius: 2px;
+            overflow-y: auto;
+        }
+
+        /* Vintage Texture Overlay */
+        #paper::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        #content {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--ink);
+            white-space: pre-wrap;
+            border-right: 3px solid var(--accent); /* Cursor */
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Floating Heart Particles */
+        .heart {
+            position: absolute;
+            color: var(--accent);
+            pointer-events: none;
+            z-index: 100;
+            animation: flyUp 2s ease-out forwards;
+        }
+
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-200px) translateX(var(--x)) rotate(var(--r)); opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <div class="ui">
-        <h1 style="font-weight: 100; letter-spacing: 5px;">YOU ARE MY UNIVERSE</h1>
-        <p style="opacity: 0.6;">Move your cursor to connect the stars</p>
+
+    <div id="paper">
+        <div id="content"></div>
+        <div class="instruction">Press any key to start typing...</div>
     </div>
-    <canvas id="canvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        const mouse = { x: null, y: null };
+        // EDIT YOUR MESSAGE HERE
+        const message = `My Dearest,
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+I wanted to write you something special, something that shows how much you mean to me. 
 
-        window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+Every time I think of you, my world gets a little brighter. You are the person who makes the ordinary feel extraordinary. 
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 1;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
+Thank you for being you. 
+
+Forever and always,
+Me ❤️`;
+
+        let index = 0;
+        const contentDiv = document.getElementById('content');
+        const paper = document.getElementById('paper');
+
+        document.addEventListener('keydown', (e) => {
+            if (index < message.length) {
+                // Remove instruction on first keypress
+                if (index === 0) document.querySelector('.instruction').style.display = 'none';
+
+                // Add next character
+                contentDiv.textContent += message[index];
+                index++;
+
+                // Auto-scroll paper
+                paper.scrollTop = paper.scrollHeight;
+
+                // Create floating heart
+                createHeart();
             }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x > canvas.width) this.x = 0;
-                if (this.x < 0) this.x = canvas.width;
-                if (this.y > canvas.height) this.y = 0;
-                if (this.y < 0) this.y = canvas.height;
-            }
-            draw() {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
+        });
 
-        function init() {
-            for (let i = 0; i < 100; i++) particles.push(new Particle());
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '❤️';
+            
+            // Randomize heart float direction
+            const randomX = (Math.random() * 100 - 50) + 'px';
+            const randomRotate = (Math.random() * 360) + 'deg';
+            
+            heart.style.setProperty('--x', randomX);
+            heart.style.setProperty('--r', randomRotate);
+            
+            // Spawn near the bottom of the current text
+            heart.style.left = (Math.random() * 80 + 10) + '%';
+            heart.style.top = '80%';
+            
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 2000);
         }
-
-        function handleParticles() {
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-                
-                // Connect to mouse
-                let dx = mouse.x - particles[i].x;
-                let dy = mouse.y - particles[i].y;
-                let distance = Math.sqrt(dx*dx + dy*dy);
-                
-                if (distance < 150) {
-                    ctx.strokeStyle = `rgba(255, 182, 193, ${1 - distance/150})`;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(mouse.x, mouse.y);
-                    ctx.stroke();
-                }
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            handleParticles();
-            requestAnimationFrame(animate);
-        }
-
-        init();
-        animate();
     </script>
 </body>
 </html>
